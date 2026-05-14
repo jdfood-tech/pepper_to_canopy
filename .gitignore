@@ -141,3 +141,35 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# -----------------------------
+# JD Food project-specific files
+# -----------------------------
+
+# Local configuration / credentials
+config.js
+*.local.js
+*.local.json
+connection*.json
+credentials*.json
+secrets*.json
+
+# Payment import/export files
+data/
+imports/
+exports/
+archive/
+payments_to_process/
+*.csv
+*.xlsx
+*.xls
+
+# SQL Server / database files
+*.bak
+*.trn
+*.mdf
+*.ldf
+
+# Temporary files
+*.tmp
+*.temp
