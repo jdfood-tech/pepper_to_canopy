@@ -205,54 +205,25 @@ async function main() {
     fs.mkdirSync(config.paths.archive, { recursive: true });
   }
 
+  const files = fs
+    .readdirSync(config.paths.inbox)
+    .filter((file) => file.toLowerCase().endsWith('.csv'))
+    .sort();
+
+  if (files.length === 0) {
+    console.log('No CSV files to process.');
+    return;
+  }
+
+  const fileToProcess = files[0];
+  const remaining = files.length - 1;
+  console.log(`Processing 1 file: ${fileToProcess} (${remaining} more left in inbox).`);
+
   const pool = await sql.connect(config.db);
-  const queue = new Set();
-  let isProcessing = false;
-
-  const enqueueCsvFiles = () => {
-    const files = fs
-      .readdirSync(config.paths.inbox)
-      .filter((file) => file.toLowerCase().endsWith('.csv'));
-
-    for (const file of files) {
-      queue.add(file);
-    }
-  };
-
-  const processQueue = async () => {
-    if (isProcessing) {
-      return;
-    }
-
-    isProcessing = true;
-    try {
-      while (queue.size > 0) {
-        const [file] = queue;
-        queue.delete(file);
-        await processFile(pool, file);
-      }
-    } finally {
-      isProcessing = false;
-    }
-  };
-
   try {
-    enqueueCsvFiles();
-    await processQueue();
-
-    console.log(`Watching inbox folder: ${config.paths.inbox}`);
-    fs.watch(config.paths.inbox, async (eventType, fileName) => {
-      if (!fileName || !fileName.toLowerCase().endsWith('.csv')) {
-        return;
-      }
-
-      console.log(`Inbox change detected (${eventType}): ${fileName}`);
-      enqueueCsvFiles();
-      await processQueue();
-    });
-  } catch (error) {
+    await processFile(pool, fileToProcess);
+  } finally {
     await pool.close();
-    throw error;
   }
 }
 
