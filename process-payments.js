@@ -63,7 +63,7 @@ async function resolveCustomerKey(transaction, customerCode) {
   const result = await transaction
     .request()
     .input('customerCode', sql.VarChar(50), customerCode)
-    .query('SELECT CustomerKey FROM AR_Customers WHERE CustomerCode = @customerCode');
+    .query('SELECT CustomerKey FROM AR_Customers WHERE LTRIM(RTRIM(CustomerCode)) = @customerCode');
 
   if (result.recordset.length === 0) {
     throw new Error(`Customer not found for CustomerCode: ${customerCode}`);
